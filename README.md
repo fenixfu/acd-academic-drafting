@@ -55,8 +55,8 @@ academic-drafter → 语言风格校准 → 分节写作
 
 1. **克隆仓库**
    ```bash
-   git clone https://github.com/你的用户名/drafting.git
-   cd drafting
+   git clone https://github.com/fenixfu/acd-academic-drafting.git
+   cd acd-academic-drafting
    ```
 
 2. **准备输入文件**
