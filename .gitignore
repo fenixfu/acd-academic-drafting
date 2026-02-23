@@ -1,0 +1,24 @@
+# 虚拟环境与缓存
+venv/
+.ruff_cache/
+__pycache__/
+
+# 编辑器临时文件
+*.swp
+*.swo
+*~
+
+# 用户产出（不发布）
+output/
+former_results/
+
+# Windows标记
+*:Zone.Identifier
+
+# 压缩包
+*.zip
+
+# opencode内部依赖
+.opencode/node_modules/
+.opencode/package.json
+.opencode/bun.lock
