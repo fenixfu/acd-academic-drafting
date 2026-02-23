@@ -1,6 +1,6 @@
 # Academic Drafting - 学术写作辅助环境
 
-基于 [opencode](https://opencode.ai) 框架构建的学术写作辅助环境，服务于批判理论导向的游戏研究（Game Studies）学术写作。项目通过模块化的 Skills 工作流，实现从征稿启事解析到论文定稿的全流程辅助。
+基于 [opencode](https://opencode.ai) 框架构建的学术写作辅助环境，服务于批判理论导向的游戏研究（Game Studies）学术写作。项目通过模块化的 Skills 工作流，实现从征稿启事解析到论文定稿的全流程辅助。原始提示词作者为清华大学写作中心耿弘明老师。
 
 ## 项目简介
 
@@ -142,5 +142,5 @@ python .opencode/skills/academic-drafter/scripts/word_count.py
 - **演绎** — 混合、转换或基于本作品进行创作
 
 惟须遵守：
-- **署名** — 注明出处
+- **署名** — 注明出处（包括本项目及原始提示词作者）
 - **相同方式共享** — 若改变或演绎本作品，须以相同许可证发布
