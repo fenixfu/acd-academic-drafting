@@ -1,6 +1,6 @@
 # Academic Drafting - 学术写作辅助环境
 
-基于 [opencode](https://opencode.ai) 框架构建的学术写作辅助环境，服务于批判理论导向的游戏研究（Game Studies）学术写作。项目通过模块化的 Skills 工作流，实现从征稿启事解析到论文定稿的全流程辅助。原始提示词作者为清华大学写作中心耿弘明老师。
+基于 [opencode](https://opencode.ai) 框架构建的学术写作辅助环境，服务于批判理论导向的游戏研究（Game Studies）学术写作。项目通过模块化的 Skills 工作流，实现从征稿启事解析到论文定稿的全流程辅助。
 
 ## 项目简介
 
@@ -25,7 +25,7 @@
 ### 典型工作流
 
 ```
-备份产出 → ./backup_output.sh
+备份产出 → ./backup_output.sh (或 .\backup_output.ps1)
     ↓
 用户上传文件 → 检查 ./references/
     ↓
@@ -41,7 +41,8 @@ academic-drafter → 语言风格校准 → 分节写作
 ### 辅助工具
 
 - **word_count.py** - 中文学术文本字数统计
-- **backup_output.sh** - 产出备份脚本
+- **backup_output.sh / .ps1** - 产出备份脚本 (含 Windows PowerShell 版本)
+- **setup-windows-antigravity.ps1** - Windows 环境 Antigravity 专用的初始化脚本
 
 ## 快速开始
 
@@ -58,6 +59,10 @@ academic-drafter → 语言风格校准 → 分节写作
    git clone https://github.com/fenixfu/acd-academic-drafting.git
    cd acd-academic-drafting
    ```
+   > **Windows 仅有使用 Antigravity 插件的用户注意**：首次克隆后需执行初始化脚本建立软链接以便识别 skills：
+   > ```powershell
+   > .\setup-windows-antigravity.ps1
+   > ```
 
 2. **准备输入文件**
    - 将征稿启事放入 `./references/` 目录（文件名含 `cfp` 关键词）
@@ -102,7 +107,10 @@ academic-drafter → 语言风格校准 → 分节写作
 ├── LICENSE                         # CC BY-SA 4.0
 ├── README.md                       # 本文件
 ├── AGENTS.md                       # 详细技术规范与工作流指引
-└── backup_output.sh                # output 备份脚本
+├── backup_output.sh                # output 备份脚本 (Linux/macOS)
+├── backup_output.ps1               # output 备份脚本 (Windows)
+├── setup-windows-antigravity.ps1   # Windows Antigravity 环境初始化脚本
+└── setup-windows.ps1               # 废弃/通用 Windows 初始化（按需保留）
 ```
 
 ## 脚本使用
@@ -119,12 +127,22 @@ python .opencode/skills/academic-drafter/scripts/word_count.py
 
 ### 备份产出
 
+**macOS / Linux / WSL**：
 ```bash
 # 执行备份（交互式确认）
 ./backup_output.sh
 
 # 预览模式
 ./backup_output.sh --dry-run
+```
+
+**Windows (PowerShell)**：
+```powershell
+# 执行备份（交互式确认）
+.\backup_output.ps1
+
+# 预览模式
+.\backup_output.ps1 -DryRun
 ```
 
 ## 注意事项
