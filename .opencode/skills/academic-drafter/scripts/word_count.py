@@ -1,150 +1,218 @@
+# utf-8
 #!/usr/bin/env python3
 """
-字数统计程序 - 用于核验中文学术摘要字数
-目标：博雅2026CFP投稿摘要（800字上限）
+字数统计程序 - 用于核验中文学术文本字数
+
+计数规则：
+  - 中文字符（含标点）: 每个计 1 字
+  - 英文单词（连续字母/数字序列）: 每个计 2 字（等效换算）
+  - 其他符号（括号、破折号等非上述字符）: 每个计 1 字
+  - 空格不计入
+
+分区逻辑：
+  - 正文：从第一个非元数据行起，到参考文献节前
+  - 参考文献：以 "参考文献"、"References"、"Bibliography" 标题行或
+    连续编号列表（"[1]" / "1."）开头的区段
+  - 分别统计后给出合计总和
 """
 
 import re
 import sys
 from pathlib import Path
 
+# ── 计数配置 ─────────────────────────────────────────
+ENGLISH_WORD_EQUIV = 2   # 1 英文单词等效 N 字
+WORD_LIMIT = 800         # 默认字数上限（正文）
 
-def count_chinese_text(text):
+
+def strip_markdown(text: str) -> str:
+    """移除 markdown 格式标记，保留纯文本内容。"""
+    # 标题标记 (# ## ### 等行首井号)
+    text = re.sub(r"^#{1,6}\s*", "", text, flags=re.MULTILINE)
+    # 粗体/斜体标记 (** * __ _)
+    text = re.sub(r"\*{1,3}|_{1,3}", "", text)
+    # 删除线 ~~
+    text = re.sub(r"~~", "", text)
+    # 行内代码 `
+    text = re.sub(r"`", "", text)
+    # 引用标记 >
+    text = re.sub(r"^>\s*", "", text, flags=re.MULTILINE)
+    # 无序列表标记 (- * + 行首)
+    text = re.sub(r"^[\-\*\+]\s+", "", text, flags=re.MULTILINE)
+    # 链接 [text](url) → text
+    text = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", text)
+    # 图片 ![alt](url) → 移除
+    text = re.sub(r"!\[([^\]]*)\]\([^)]*\)", "", text)
+    # 水平线 --- ***
+    text = re.sub(r"^[-*_]{3,}\s*$", "", text, flags=re.MULTILINE)
+    return text
+
+
+def count_text(text: str) -> dict:
     """
-    统计中文学术文本的字数
+    统计一段文本的等效字数。
+    自动剥离 markdown 格式标记后再计数。
 
-    规则：
-    1. 中文字符（含标点）每个算1字
-    2. 英文字母/数字连续序列算1字（如"Vanguard"算1字，"2026"算1字）
-    3. 空格不计入
-    4. 参考文献按实际字符数计算
-
-    返回：总字数
+    Returns dict with keys:
+        chinese_chars, english_words, english_equiv,
+        other_symbols, total
     """
-    # 移除多余空格
-    text = text.strip()
+    text = strip_markdown(text)
 
-    # 统计中文字符（含标点）
-    chinese_chars = len(re.findall(r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]", text))
-
-    # 统计英文单词（连续字母/数字序列算作1个单位）
+    chinese_chars = len(re.findall(
+        r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]", text
+    ))
     english_words = len(re.findall(r"[a-zA-Z0-9]+", text))
+    other_symbols = len(re.findall(
+        r"[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\sa-zA-Z0-9]", text
+    ))
 
-    # 统计其他符号（如括号、破折号等）
-    other_symbols = len(
-        re.findall(r"[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\sa-zA-Z0-9]", text)
-    )
-
-    total = chinese_chars + english_words + other_symbols
+    english_equiv = english_words * ENGLISH_WORD_EQUIV
+    total = chinese_chars + english_equiv + other_symbols
 
     return {
-        "total": total,
         "chinese_chars": chinese_chars,
         "english_words": english_words,
+        "english_equiv": english_equiv,
         "other_symbols": other_symbols,
+        "total": total,
     }
 
 
-def check_abstract_file(filepath):
-    """检查摘要文件的字数"""
+# ── Markdown 分区提取 ─────────────────────────────────
+_REF_HEADING_RE = re.compile(
+    r"^#{1,6}\s*(参考文献|References|Bibliography)\s*$",
+    re.IGNORECASE,
+)
+_REF_INLINE_RE = re.compile(
+    r"^(参考文献|References|Bibliography)\s*$",
+    re.IGNORECASE,
+)
+# 连续编号列表首行：[1] 或 1.
+_REF_NUMBERED_RE = re.compile(r"^\[1\]|^1\.\s")
+
+# 元数据行（标题行、blockquote、yaml fence 等，排除正文起始点之后的标题）
+_META_RE = re.compile(r"^(#|>|---|```|<!--)")
+
+
+def split_sections(content: str):
+    """
+    将 markdown 内容拆分为 (正文文本, 参考文献文本)。
+
+    逻辑：
+    1. 跳过文件开头的元数据行（#、>、--- 等）
+    2. 遇到参考文献节标识时切换到参考文献区
+    3. 返回两段纯文本
+    """
+    lines = content.splitlines()
+
+    body_lines = []
+    ref_lines = []
+    in_ref = False
+    body_started = False
+
+    for line in lines:
+        stripped = line.strip()
+
+        # 检测参考文献节开始
+        if not in_ref and (
+            _REF_HEADING_RE.match(stripped)
+            or _REF_INLINE_RE.match(stripped)
+        ):
+            in_ref = True
+            ref_lines.append(line)
+            continue
+
+        if in_ref:
+            ref_lines.append(line)
+            continue
+
+        # 正文尚未开始时跳过元数据行
+        if not body_started:
+            if stripped and not _META_RE.match(stripped):
+                body_started = True
+            else:
+                continue  # 跳过元数据
+
+        # 正文中出现编号列表首行，且已有足够正文，视为参考文献开始
+        if body_started and _REF_NUMBERED_RE.match(stripped):
+            # 只有在正文已有内容时才切换（避免误判正文内编号）
+            if len(body_lines) > 5:
+                in_ref = True
+                ref_lines.append(line)
+                continue
+
+        body_lines.append(line)
+
+    return "\n".join(body_lines), "\n".join(ref_lines)
+
+
+# ── 显示辅助 ─────────────────────────────────────────
+def fmt_stats(stats: dict, label: str, limit: int | None = None) -> None:
+    print(f"\n  【{label}】")
+    print(f"    中文字符  : {stats['chinese_chars']} 字")
+    print(f"    英文单词  : {stats['english_words']} 词 × {ENGLISH_WORD_EQUIV} = {stats['english_equiv']} 字（等效）")
+    print(f"    其他符号  : {stats['other_symbols']} 个")
+    print( "    ─────────────────────────────")
+    print(f"    小计      : {stats['total']} 字")
+    if limit is not None:
+        remaining = limit - stats["total"]
+        if remaining >= 0:
+            print(f"    ✅ 符合上限 {limit} 字，剩余 {remaining} 字")
+        else:
+            print(f"    ❌ 超出上限 {limit} 字，超出 {-remaining} 字")
+
+
+def check_file(filepath: str, limit: int = WORD_LIMIT) -> int:
+    """检查文件，分别统计正文与参考文献，返回合计字数。"""
     path = Path(filepath)
     if not path.exists():
         print(f"❌ 文件不存在: {filepath}")
-        return
+        return 0
 
     content = path.read_text(encoding="utf-8")
+    body_text, ref_text = split_sections(content)
 
-    # 移除markdown标题等元数据，只统计正文
-    lines = content.split("\n")
-
-    # 查找摘要正文开始位置（通常是第一个非空行且不包含"#"）
-    abstract_start = 0
-    for i, line in enumerate(lines):
-        if (
-            line.strip()
-            and not line.startswith("#")
-            and not line.startswith(">")
-            and not line.startswith("-")
-        ):
-            abstract_start = i
-            break
-
-    # 查找参考文献开始位置
-    ref_start = len(lines)
-    for i, line in enumerate(lines):
-        if (
-            "参考文献" in line
-            or "References" in line
-            or line.strip().startswith("1. ")
-            or line.strip().startswith("1.")
-        ):
-            if i > abstract_start + 5:  # 确保不是正文中的编号
-                ref_start = i
-                break
-
-    # 提取正文（不含参考文献）
-    abstract_lines = lines[abstract_start:ref_start]
-    abstract_text = "\n".join(abstract_lines)
-
-    # 统计
-    abstract_stats = count_chinese_text(abstract_text)
-    full_stats = count_chinese_text(content)
+    body_stats = count_text(body_text)
+    ref_stats = count_text(ref_text)
+    combined_total = body_stats["total"] + ref_stats["total"]
 
     print(f"\n{'=' * 60}")
     print(f"📄 文件: {filepath}")
     print(f"{'=' * 60}")
-    print("\n摘要正文统计（不含参考文献）:")
-    print(f"  中文字符: {abstract_stats['chinese_chars']} 字")
-    print(f"  英文单词: {abstract_stats['english_words']} 个")
-    print(f"  其他符号: {abstract_stats['other_symbols']} 个")
-    print("  ─────────────────")
-    print(f"  总计: {abstract_stats['total']} 字")
 
-    # 检查是否超标
-    LIMIT = 800
-    if abstract_stats["total"] <= LIMIT:
-        print(f"  ✅ 符合要求（上限 {LIMIT} 字）")
-        print(f"     剩余额度: {LIMIT - abstract_stats['total']} 字")
-    else:
-        print(f"  ❌ 超出限制（上限 {LIMIT} 字）")
-        print(f"     超出: {abstract_stats['total'] - LIMIT} 字")
+    fmt_stats(body_stats, "正文（不含参考文献）", limit=limit)
+    fmt_stats(ref_stats,  "参考文献")
 
-    print("\n完整文件统计（含标题、参考文献）:")
-    print(f"  总计: {full_stats['total']} 字")
+    print(f"\n  合计（正文 + 参考文献）: {combined_total} 字")
+    print(f"{'=' * 60}")
 
-    return abstract_stats["total"]
+    return combined_total
 
 
+# ── 入口 ─────────────────────────────────────────────
 def main():
-    """主函数"""
-    print("📝 中文学术摘要字数统计工具")
+    print("📝 学术文本字数统计工具")
     print("=" * 60)
-    print("目标上限: 800 字（博雅2026CFP要求）")
-    print("Token 预算: 600 tokens（保守估计）")
+    print(f"计数规则：英文单词 × {ENGLISH_WORD_EQUIV}，中文字符 × 1，符号 × 1")
+    print(f"默认正文上限：{WORD_LIMIT} 字")
     print("=" * 60)
 
     if len(sys.argv) > 1:
-        # 检查指定文件
         for filepath in sys.argv[1:]:
-            check_abstract_file(filepath)
+            check_file(filepath)
     else:
-        # 检查默认位置
-        default_files = [
-            "/home/fenix/projects/drafting1/output/博雅2026_摘要_定稿.md",
-            "/home/fenix/projects/drafting1/output/05_摘要_初稿.md",
-            "/home/fenix/projects/drafting1/output/05_摘要.md",
-        ]
-
-        found = False
-        for filepath in default_files:
-            if Path(filepath).exists():
-                check_abstract_file(filepath)
-                found = True
-                break
-
-        if not found:
-            print("\n⚠️ 未找到摘要文件")
-            print("请提供文件路径: python3 word_count.py <文件路径>")
+        # 默认查找输出目录下的摘要文件
+        project_root = Path(__file__).resolve().parents[4]  # 4 级向上到项目根
+        candidates = list(project_root.glob("output/*.md"))
+        if not candidates:
+            print("\n⚠️ 未找到文件，请指定路径:")
+            print("  python word_count.py <文件路径>")
+            return
+        # 取最新修改的文件
+        target = max(candidates, key=lambda p: p.stat().st_mtime)
+        print(f"\n自动选取最新文件: {target}")
+        check_file(str(target))
 
 
 if __name__ == "__main__":
