@@ -85,7 +85,7 @@ _REF_HEADING_RE = re.compile(
     re.IGNORECASE,
 )
 _REF_INLINE_RE = re.compile(
-    r"^(参考文献|References|Bibliography)\s*$",
+    r"^[\*\[\【\(\（\{\<]*?(参考文献|References|Bibliography)\S*?\s*$",
     re.IGNORECASE,
 )
 # 连续编号列表首行：[1] 或 1.
@@ -199,20 +199,28 @@ def main():
     print("=" * 60)
 
     if len(sys.argv) > 1:
-        for filepath in sys.argv[1:]:
-            check_file(filepath)
+        # [修复] 改用 range 索引遍历，避免静态类型检查器对 list 切片(sys.argv[1:])报错
+        for i in range(1, len(sys.argv)):
+            check_file(sys.argv[i])
     else:
         # 默认查找输出目录下的摘要文件
-        project_root = Path(__file__).resolve().parents[4]  # 4 级向上到项目根
-        candidates = list(project_root.glob("output/*.md"))
-        if not candidates:
-            print("\n⚠️ 未找到文件，请指定路径:")
-            print("  python word_count.py <文件路径>")
-            return
-        # 取最新修改的文件
-        target = max(candidates, key=lambda p: p.stat().st_mtime)
-        print(f"\n自动选取最新文件: {target}")
-        check_file(str(target))
+        # 注意：这里假设脚本位于项目深层目录，如果层级不足 parents[4] 可能会越界
+        try:
+            project_root = Path(__file__).resolve().parents[4]  # 4 级向上到项目根
+            candidates = list(project_root.glob("output/*.md"))
+            
+            if not candidates:
+                print("\n⚠️ 未找到文件，请指定路径:")
+                print("  python word_count.py <文件路径>")
+                return
+            
+            # 取最新修改的文件
+            target = max(candidates, key=lambda p: p.stat().st_mtime)
+            print(f"\n自动选取最新文件: {target}")
+            check_file(str(target))
+        except IndexError:
+            print("\n⚠️ 无法自动定位项目根目录 (parents[4] 越界)。")
+            print("请直接提供文件路径: python word_count.py <文件路径>")
 
 
 if __name__ == "__main__":
