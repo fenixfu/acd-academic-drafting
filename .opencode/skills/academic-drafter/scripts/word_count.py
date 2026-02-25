@@ -5,8 +5,9 @@
 
 计数规则：
   - 中文字符（含标点）: 每个计 1 字
-  - 英文单词（连续字母/数字序列）: 每个计 2 字（等效换算）
-  - 其他符号（括号、破折号等非上述字符）: 每个计 1 字
+  - 英文单词（连续字母序列）: 每个计 2 字（等效换算）
+  - 数字字符: 每位计 1 字
+  - 标点符号等其他字符: 不计入
   - 空格不计入
 
 分区逻辑：
@@ -55,26 +56,27 @@ def count_text(text: str) -> dict:
 
     Returns dict with keys:
         chinese_chars, english_words, english_equiv,
-        other_symbols, total
+        digit_chars, total
     """
     text = strip_markdown(text)
 
     chinese_chars = len(re.findall(
-        r"[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]", text
+        r"[\u4e00-\u9fff]", text
     ))
-    english_words = len(re.findall(r"[a-zA-Z0-9]+", text))
-    other_symbols = len(re.findall(
-        r"[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\sa-zA-Z0-9]", text
-    ))
+    # 英文单词：仅匹配连续字母序列（不含数字）
+    english_words = len(re.findall(r"[a-zA-Z]+", text))
+    # 数字字符：每位单独计 1 字
+    digit_chars = len(re.findall(r"[0-9]", text))
+    # 标点符号等其他字符不计入
 
     english_equiv = english_words * ENGLISH_WORD_EQUIV
-    total = chinese_chars + english_equiv + other_symbols
+    total = chinese_chars + english_equiv + digit_chars
 
     return {
         "chinese_chars": chinese_chars,
         "english_words": english_words,
         "english_equiv": english_equiv,
-        "other_symbols": other_symbols,
+        "digit_chars": digit_chars,
         "total": total,
     }
 
@@ -152,15 +154,18 @@ def fmt_stats(stats: dict, label: str, limit: int | None = None) -> None:
     print(f"\n  【{label}】")
     print(f"    中文字符  : {stats['chinese_chars']} 字")
     print(f"    英文单词  : {stats['english_words']} 词 × {ENGLISH_WORD_EQUIV} = {stats['english_equiv']} 字（等效）")
-    print(f"    其他符号  : {stats['other_symbols']} 个")
+    print(f"    数字字符  : {stats['digit_chars']} 位 × 1 = {stats['digit_chars']} 字")
     print( "    ─────────────────────────────")
     print(f"    小计      : {stats['total']} 字")
     if limit is not None:
         remaining = limit - stats["total"]
-        if remaining >= 0:
-            print(f"    ✅ 符合上限 {limit} 字，剩余 {remaining} 字")
+        if remaining < 0:
+            print(f"    ❌ 不符合字数限制 {limit} 字，超出 {-remaining} 字")
+        elif remaining > WORD_LIMIT * 0.1:
+            print(f"    ❌ 字数浪费严重，离上限 {limit} 字剩余 {remaining} 字")
         else:
-            print(f"    ❌ 超出上限 {limit} 字，超出 {-remaining} 字")
+            print(f"    ✅ 符合字数限制 {limit}×95%±5% 字，剩余 {remaining} 字")
+            
 
 
 def check_file(filepath: str, limit: int = WORD_LIMIT) -> int:
@@ -186,10 +191,12 @@ def check_file(filepath: str, limit: int = WORD_LIMIT) -> int:
     print(f"\n  【正文+参考文献】")
     print(f"    总计      : {combined_total} 字")
     remaining = WORD_LIMIT - combined_total
-    if remaining >= 0:
-        print(f"    ✅ 符合上限 {WORD_LIMIT} 字，剩余 {remaining} 字")
+    if remaining < 0:
+        print(f"    ❌ 不符合字数限制 {limit} 字，超出 {-remaining} 字")
+    elif remaining > WORD_LIMIT * 0.1:
+        print(f"    ❌ 字数浪费严重，离上限 {limit} 字剩余 {remaining} 字")
     else:
-        print(f"    ❌ 超出上限 {WORD_LIMIT} 字，超出 {-remaining} 字")
+        print(f"    ✅ 符合字数限制 {limit}×95%±5% 字，剩余 {remaining} 字")
 
 
     # print(f"\n  合计（正文 + 参考文献）: {combined_total} 字")
@@ -202,7 +209,7 @@ def check_file(filepath: str, limit: int = WORD_LIMIT) -> int:
 def main():
     print("📝 学术文本字数统计工具")
     print("=" * 60)
-    print(f"计数规则：英文单词 × {ENGLISH_WORD_EQUIV}，中文字符 × 1，符号 × 1")
+    print(f"计数规则：英文单词 × {ENGLISH_WORD_EQUIV}，中文字符 × 1，数字字符 × 1，标点等符号不计")
     print(f"默认正文+参考文献上限：{WORD_LIMIT} 字")
     print("=" * 60)
 

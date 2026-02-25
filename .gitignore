@@ -24,3 +24,6 @@ former_results/
 .opencode/node_modules/
 .opencode/package.json
 .opencode/bun.lock
+
+# 傻逼antigravity
+.agents/

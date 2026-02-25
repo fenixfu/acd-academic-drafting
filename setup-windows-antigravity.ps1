@@ -44,7 +44,7 @@ if (Test-Path $junction2) {
     Write-Host "Step 3: GEMINI.md already exists, skipping" -ForegroundColor Yellow
 }
 else {
-    cmd /c mklink "$junction2" "$target2"
+    cmd /c mklink /H "$junction2" "$target2"
     Write-Host "Step 3: junction GEMINI.md -> AGENTS.md created" -ForegroundColor Green
 }
 

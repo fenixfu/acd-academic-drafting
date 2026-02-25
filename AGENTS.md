@@ -1,12 +1,11 @@
 # AGENTS.md
-
-本文档为在此代码库中工作的AI代理提供技术规范和工作流程指引。
-
+```对于antigravity和gemini cli软链接为GEMINI.md```
+本文档为在此项目中工作的AI agent提供技术规范和工作流程指引。
 ---
 
 ## 1. 项目概述
 
-这是一个**学术写作辅助环境**，基于opencode框架构建，服务于批判理论导向的游戏研究（Game Studies）学术写作。项目不包含传统软件代码，主要产出为中文学术论文、征稿摘要等。
+这是一个**学术写作辅助环境**，基于opencode框架构建，服务于批判理论导向的游戏研究（Game Studies）学术写作。项目不产出软件代码，主要产出为中文学术论文、会议摘要等。
 
 **项目结构：**
 ```
@@ -24,19 +23,19 @@
 ├── former_results/        # 备份存储目录
 └── backup_output.sh       # output备份脚本
 ```
+本项目包含软件代码，但这些代码不属于项目产出，仅作为辅助工具使用。如用户不要求检查维护这些代码，则无需关注相应的规范，直接跳到第4部分和第5部分。
 
 ---
 
-## 2. 构建与测试命令
+## 2. 辅助脚本使用说明
 
-### 2.1 Python脚本
+本项目包含部分辅助脚本，用于统计字数及备份产出。
 
-此项目包含一个Python脚本用于字数统计，无传统构建流程。
+### 2.1 字数统计脚本 (Python)
+
+此脚本用于统计中文学术摘要的字数。
 
 ```bash
-# 字数统计（中文学术摘要）
-python .opencode/skills/academic-drafter/scripts/word_count.py <文件路径>
-
 # 示例：统计output目录下的摘要
 python .opencode/skills/academic-drafter/scripts/word_count.py output/摘要_定稿.md
 
@@ -49,24 +48,9 @@ python .opencode/skills/academic-drafter/scripts/word_count.py
 - 英文字母/数字连续序列：算1字（如"Vanguard"算1字）
 - 空格：不计入
 
-### 2.2 Lint与格式化
+### 2.2 产出备份脚本 (Bash)
 
-项目使用Ruff进行Python代码检查与格式化。
-
-```bash
-# 检查Python文件
-ruff check .opencode/skills/academic-drafter/scripts/word_count.py
-
-# 自动修复问题
-ruff check --fix .opencode/skills/academic-drafter/scripts/word_count.py
-
-# 格式化代码
-ruff format .opencode/skills/academic-drafter/scripts/word_count.py
-```
-
-### 2.3 Bash脚本
-
-项目包含一个备份脚本用于将output目录内容备份到former_results。
+将 `output` 目录内容备份到 `former_results`。
 
 ```bash
 # 执行备份（交互式确认是否清空output）
@@ -82,165 +66,15 @@ ruff format .opencode/skills/academic-drafter/scripts/word_count.py
 - 追加策略：只复制新增文件，跳过已存在文件
 - 清空确认：执行后询问是否清空output目录
 
-### 2.4 运行单个测试
-
-本项目**没有单元测试**。如需验证脚本功能，直接运行脚本并检查输出：
-
-```bash
-# 测试字数统计
-echo "这是一个测试摘要。" > /tmp/test_abstract.txt
-python .opencode/skills/academic-drafter/scripts/word_count.py /tmp/test_abstract.txt
-
-# 测试备份脚本
-./backup_output.sh --dry-run
-```
-
 ---
 
-## 3. 代码风格指南
 
-### 3.1 Python脚本规范
 
-适用于 `word_count.py`。如需修改或扩展，请遵循以下规范。
-
-#### 3.1.1 通用规范
-
-- **Python版本**：3.13
-- **编码**：UTF-8
-- **行长度**：默认Ruff配置（通常88字符）
-- **行尾风格**：LF
-
-#### 3.1.2 导入规范
-
-```python
-# 标准库 → 第三方库 → 本地模块
-import re
-import sys
-from pathlib import Path
-
-# 不允许：通配符导入 (from xxx import *)
-```
-
-#### 3.1.3 类型注解
-
-- **必须**为所有函数参数和返回值提供类型注解
-- 使用`typing`模块中的类型（如`Optional`、`List`、`Dict`）
-
-```python
-# 正确示例
-def count_chinese_text(text: str) -> dict[str, int]:
-    ...
-
-def check_abstract_file(filepath: str) -> int | None:
-    ...
-
-# 不允许：无类型注解的函数
-def count_chinese_text(text):  # 错误
-    ...
-```
-
-#### 3.1.4 命名约定
-
-- **函数/变量**：snake_case（如`count_chinese_text`、`abstract_stats`）
-- **常量**：UPPER_SNAKE_CASE（如`LIMIT = 800`）
-- **类名**（如有）：PascalCase
-- **私有函数**：单下划线前缀（如`_internal_helper`）
-
-#### 3.1.5 文档字符串
-
-使用Google风格的docstring：
-
-```python
-def count_chinese_text(text: str) -> dict[str, int]:
-    """
-    统计中文学术文本的字数。
-
-    规则：
-    1. 中文字符（含标点）每个算1字
-    2. 英文字母/数字连续序列算1字
-    3. 空格不计入
-
-    Args:
-        text: 待统计的文本字符串
-
-    Returns:
-        包含各项统计数据的字典
-    """
-```
-
-#### 3.1.6 错误处理
-
-- 使用`Path.exists()`预检查文件是否存在
-- 错误信息输出到`stderr`（使用`print(f"...", file=sys.stderr)`）
-- 不使用裸`except:`，捕获具体异常类型
-
-#### 3.1.7 格式化偏好
-
-- 使用f-string进行字符串格式化
-- 逗号后空格：`[1, 2, 3]`而非`[1,2,3]`
-- 等号周围空格：`LIMIT = 800`而非`LIMIT=800`
-
-### 3.2 Bash脚本规范
-
-适用于 `backup_output.sh`。如需修改或扩展，请遵循以下规范。
-
-#### 3.2.1 通用规范
-
-- **Shell**：Bash (#!/bin/bash)
-- **编码**：UTF-8
-- **错误处理**：使用`set -e`在错误时退出
-
-#### 3.2.2 检查工具
-
-```bash
-# 使用shellcheck检查脚本
-shellcheck backup_output.sh
-```
-
-#### 3.2.3 语法偏好
-
-- 使用`[[ ]]`而非`[ ]`进行条件测试
-- 变量引用始终使用双引号：`"$VAR"`而非`$VAR`
-- 使用`$()`而非反引号进行命令替换
-- 使用`read -r`避免反斜杠转义
-
-```bash
-# 正确示例
-if [[ -f "$filepath" ]]; then
-    content=$(cat "$filepath")
-fi
-
-# 不推荐
-if [ -f $filepath ]; then
-    content=`cat $filepath`
-fi
-```
-
-#### 3.2.4 命名约定
-
-- **变量**：UPPER_SNAKE_CASE（如`OUTPUT_DIR`、`BACKUP_DIR`）
-- **函数**：snake_case（如`calculate_similarity`）
-- **局部变量**：使用`local`声明
-
-#### 3.2.5 输出规范
-
-- 错误信息输出到stderr：`echo "错误信息" >&2`
-- 用户交互使用`read -p "提示: "`
-- 状态信息使用统一前缀（如`===`分隔章节）
-
-#### 3.2.6 安全规范
-
-- 使用`${VAR:?}`防止空变量导致的危险操作
-- 使用`rm -rf "${DIR:?}"/*`而非`rm -rf $DIR/*`
-- 敏感操作前进行确认
-
----
-
-## 4. 学术写作工作流
+## 3. 学术写作工作流
 
 本项目的核心功能通过opencode skills实现，而非传统代码。
 
-### 4.1 Skills加载顺序
+### 3.1 Skills加载顺序
 
 当用户请求学术论文写作时，按以下顺序加载skills：
 
@@ -249,7 +83,7 @@ fi
 3. **academic-drafter** - 执行正文写作与校对
 4. **rewrite-summarize** - 文本总结与重写（可选）
 
-### 4.2 典型工作流程
+### 3.2 典型工作流程
 
 ```
 备份产出 → ./backup_output.sh
@@ -268,36 +102,51 @@ academic-drafter执行 → 04_语言风格校准书.md（步骤四）
     ↓
 批判性回读与理论深化（委托subagent） → 06_问题清单.md, 06_修改稿.md（步骤六）
     ↓
-形式规范校对（委托subagent） → 07_格式检查报告.md, 07_修改稿.md（步骤七）
+AI痕迹扫描与内容打磨（委托subagent） → 07_扫描报告.md, 07_修改稿.md（步骤七）
     ↓
-最终扫描与定稿（委托subagent） → 08_最终稿.md（步骤八）
+形式规范校对与定稿（委托subagent） → 08_格式检查报告.md, 08_最终稿.md（步骤八）
     ↓
-进一步迭代（可选） → 09_迭代稿.md（步骤九）
+进一步迭代（可选） → 09_迭代稿_*.md（步骤九）
 ```
 
-### 4.3 文件输入规范
+### 3.3 文件输入规范
 
 - **征稿启事**：放在`./references/`目录，文件名含`cfp`、`call`、`征稿`关键词
 - **讨论记录**：放在`./references/`目录，文件名含`notes`、`discussion`、`记录`、`讨论`关键词
 - **输出文件**：写入`./output/`目录
 - **备份文件**：存储于`./former_results/`目录
 
-### 4.4 禁用AI表达清单
-
-在学术写作中，**禁止使用**以下AI典型表达：
-
-- 过渡套话：「本文……」「研究表明」「不是……而是……」「值得注意的是」「需要指出的是」
-- 空洞概念：「随着时代的发展」「这一问题具有重要意义」「引发了广泛的讨论」
-- 机械结构：「首先……其次……最后……」不得超过一次
-
-**替代策略**：用具体学术案例和文本细读代替抽象概括；保留语言停顿和思考痕迹。
-
 ---
 
-## 5. 注意事项
+## 4. 注意事项
 
 - **不要创建新的编程代码**：本项目不是软件工程环境
 - **不要修改skills**：除非用户明确要求，否则不要修改skill定义文件
 - **尊重用户隐私**：不要将用户的论文内容、讨论记录上传或分享
 - **输出目录**：所有生成文件写入`./output/`而非项目根目录
 - **询问备份**：计划阶段，如果`./output/`目录已有文件，询问用户是否执行`./backup_output.sh`备份到`./former_results/`
+- **调用subagent**：在skill中明确提出要求调用/委托subagent的步骤务必调用subagent。务必根据要求调用subagent！如无通用subagent，请尝试调用browser agent等拥有正常读取能力的subagent。
+
+## 5. 项目流程容易忽略的重要细节
+
+基于历史教训，在执行本项目的学术写作工作流时，Agent **绝对禁止**以下越权、投机取巧与堆砌敷衍的行为：
+
+1. **禁止破坏“人机确认”断点**
+   - **红线**：根据工作流说明（`workflows/academic-drafting-stage3.md`）与 `academic-drafter/SKILL.md`，每个子步骤（如步骤六、步骤七、步骤八）末尾明确标有“暂停，等待用户确认”。特别是步骤七中的“五项扫描每项结果返回用户确认”。Agent **必须**在每个断点停下，输出当前步骤结果，并明确等待用户的审查与指令。
+   - **严禁**：连续越权执行多个步骤（例如一口气跑完问题诊断到终极校对），剥夺用户对文本的反馈和施加判断的能力。
+
+2. **必须全文读取并注入 Subagent 提示词**
+   - **红线**：在执行步骤六、步骤七等明确要求调用 Subagent 的环节时，Agent 必须首先使用相关工具（如 `view_file`）读取 `.opencode/skills/academic-writer-persona/SKILL.md` 的**全部原始内容**，并将其作为完整的系统提示词严谨地注入给 Subagent。
+   - **严禁**：只向 Subagent 灌输一句简化的角色设定敷衍了事———这会导致诊断无法获得正确的上下文。
+
+3. **严格执行版本控制更新（防迭代混沌）**
+   - **红线**：根据 `academic-drafter/SKILL.md` 的步骤九规定，每次循环迭代都**必须且只能**在 `09_迭代稿_*.md` 的文件头部添加或更新包含 `版本：v[N]`、`修改日期：`、`本轮主要修改：` 的版本说明区。
+   - **严禁**：在不建立或不更新任何头部档案的情况下连续覆盖写入文件，导致多轮迭代轨迹无法追踪。
+
+4. **格式检查报告必须冷酷客观（防谄媚与伪造）**
+   - **红线**：执行步骤八的格式检查时，必须对照步骤一产出的《技术规格书》“逐项检查，零容忍”。报告必须回归客观诊断的工具属性，实事求是。
+   - **严禁**：为客观检查的结果附加主观的、圆滑的、谄媚的、甚至自欺欺人的评价（譬如“完美契合标准”、“达到顶刊水平”、“适合立刻投稿”等等）。格式检查应实事求是，拍马屁不解决问题，反而创造问题，增加项目成本。
+
+5. **论证必须强制落地到具体案例（防御空洞堆砌）**
+   - **红线**：全面贯彻 `academic-writer-persona` 中的「特质四：游戏文本的深度阐释者」。任何抽象的论点和理论概念（不仅限于哲学概念或软硬件术语，如 TPM 2.0、德里达等），都必须能够落地到具体的游戏文本、实际游玩体验或局内机制中进行有效结合分析。
+   - **严禁**：生硬嫁接毫无关联的术语，停留在“呈现了X现象”的表层；绝对禁止机械堆砌理论空壳，使得文章沦为云山雾罩、缺乏实质支撑的虚假理论狂欢。

@@ -43,8 +43,8 @@ academic-drafter          ←── 写作执行（步骤4-8）
 ```
 加载 academic-writer-persona
 → academic-drafter 步骤六（批判性回读）
-→ academic-drafter 步骤七（形式校对）
-→ academic-drafter 步骤八（AI痕迹扫描）
+→ academic-drafter 步骤七（AI痕迹扫描）
+→ academic-drafter 步骤八（形式校对与定稿）
 ```
 
 **场景D：只分析征稿启事，暂不写作**
