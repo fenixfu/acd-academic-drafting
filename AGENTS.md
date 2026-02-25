@@ -244,8 +244,8 @@ fi
 
 当用户请求学术论文写作时，按以下顺序加载skills：
 
-1. **cfp-analyzer** - 解析征稿启事，提取形式要求与主题偏好
-2. **academic-writer-persona** - 激活执笔者人格底座
+1. **academic-writer-persona** - 激活执笔者人格底座
+2. **cfp-analyzer** - 解析征稿启事，提取形式要求与主题偏好
 3. **academic-drafter** - 执行正文写作与校对
 4. **rewrite-summarize** - 文本总结与重写（可选）
 

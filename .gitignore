@@ -11,6 +11,8 @@ __pycache__/
 # 用户产出（不发布）
 output/
 former_results/
+.opencode/workflows/
+.opencode/plans/
 
 # Windows标记
 *:Zone.Identifier

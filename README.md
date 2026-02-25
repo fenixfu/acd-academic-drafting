@@ -42,7 +42,8 @@ academic-drafter → 语言风格校准 → 分节写作
 
 - **word_count.py** - 中文学术文本字数统计
 - **backup_output.sh / .ps1** - 产出备份脚本 (含 Windows PowerShell 版本)
-- **setup-windows-antigravity.ps1** - Windows 环境 Antigravity 专用的初始化脚本
+- **setup-windows-antigravity.ps1** - Windows 环境 Antigravity 的初始化脚本
+- **setup-linux-gemini.sh** - Linux 环境 Gemini CLI 的初始化脚本
 
 ## 快速开始
 
@@ -59,9 +60,14 @@ academic-drafter → 语言风格校准 → 分节写作
    git clone https://github.com/fenixfu/acd-academic-drafting.git
    cd acd-academic-drafting
    ```
-   > **Windows 仅有使用 Antigravity 插件的用户注意**：首次克隆后需执行初始化脚本建立软链接以便识别 skills：
+   > **Windows 下使用 Antigravity 的用户注意**：首次克隆后需执行初始化脚本建立软链接（*需要打开“开发人员模式”*）：
    > ```powershell
    > .\setup-windows-antigravity.ps1
+   > ```
+   > **Linux 下使用 Gemini CLI 的用户注意**：首次克隆后需执行初始化脚本建立软链接：
+   > ```bash
+   > chmod +x setup-linux-gemini.sh
+   > ./setup-linux-gemini.sh
    > ```
 
 2. **准备输入文件**

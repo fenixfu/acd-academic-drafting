@@ -181,10 +181,18 @@ def check_file(filepath: str, limit: int = WORD_LIMIT) -> int:
     print(f"📄 文件: {filepath}")
     print(f"{'=' * 60}")
 
-    fmt_stats(body_stats, "正文（不含参考文献）", limit=limit)
+    fmt_stats(body_stats, "正文")
     fmt_stats(ref_stats,  "参考文献")
+    print(f"\n  【正文+参考文献】")
+    print(f"    总计      : {combined_total} 字")
+    remaining = WORD_LIMIT - combined_total
+    if remaining >= 0:
+        print(f"    ✅ 符合上限 {WORD_LIMIT} 字，剩余 {remaining} 字")
+    else:
+        print(f"    ❌ 超出上限 {WORD_LIMIT} 字，超出 {-remaining} 字")
 
-    print(f"\n  合计（正文 + 参考文献）: {combined_total} 字")
+
+    # print(f"\n  合计（正文 + 参考文献）: {combined_total} 字")
     print(f"{'=' * 60}")
 
     return combined_total
