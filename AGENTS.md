@@ -128,7 +128,7 @@ AI痕迹扫描与内容打磨（委托subagent） → 07_扫描报告.md, 07_修
 - **询问备份**：计划阶段，如果`./output/`目录已有文件，询问用户是否执行`./backup_output.sh`备份到`./former_results/`
 - **调用subagent**：在skill中明确提出要求调用/委托subagent的步骤务必调用subagent。再次重申，务必根据要求调用subagent！Subagent优先选择用户自定义的subagent，例如专门执行技能的"skill_agent"；其次选择通用subagent。如果两者皆无，请尝试调用"explore"、"codebase investigator"、"browser agent"等拥有正常读取能力的subagent。
 
-## 5. 项目流程容易忽略的重要细节
+## 5. 项目流程执行红线
 
 基于历史教训，在执行本项目的学术写作工作流时，Agent **绝对禁止**以下越权、投机取巧与堆砌敷衍的行为：
 
