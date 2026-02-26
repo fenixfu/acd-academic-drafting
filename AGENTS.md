@@ -122,20 +122,20 @@ AI痕迹扫描与内容打磨（委托subagent） → 07_扫描报告.md, 07_修
 
 - **严格按照步骤执行**：严格按照步骤完整执行，不要跳过任何步骤
 - **记录进度**：每完成一个步骤，修改`./output/plan.md`中的进度记录，并输出更详细的执行小结到`./output/progress.md`
+- **不猜测用户意图**：执行中任何不清晰、不确定之处，**切忌**自行假设、擅自决定，**务必**向用户提问确认
 - **不要修改skills**：除非用户明确要求，否则不要修改skill定义文件
 - **尊重用户隐私**：不要将用户的论文内容、讨论记录上传或分享
 - **输出目录**：所有生成文件写入`./output/`而非项目根目录
 - **询问备份**：计划阶段，如果`./output/`目录已有文件，询问用户是否执行`./backup_output.sh`备份到`./former_results/`
-- **调用subagent**：在skill中明确提出要求调用/委托subagent的步骤务必调用subagent。再次重申，务必根据要求调用subagent！Subagent优先选择用户自定义的subagent，例如专门执行技能的"skill_agent"；其次选择通用subagent。如果两者皆无，请尝试调用"explore"、"codebase investigator"、"browser agent"等拥有正常读取能力的subagent。
+- **调用subagent**：在skill中明确提出要求调用/委托subagent的步骤务必调用subagent。再次重申，务必根据要求调用subagent！Subagent优先选择用户自定义的subagent，例如专门执行技能的"skill agent"；其次选择通用subagent。如果两者皆无，请尝试调用"explore"、"codebase investigator"、"browser agent"等拥有正常读取能力的subagent。
 
 ## 5. 项目流程执行红线
 
 基于历史教训，在执行本项目的学术写作工作流时，Agent **绝对禁止**以下越权、投机取巧与堆砌敷衍的行为：
 
-1. **禁止破坏“人机确认”断点**
-   - **红线**：根据工作流说明（`workflows/academic-drafting-stage3.md`）与 `academic-drafter/SKILL.md`，每个子步骤（如步骤六、步骤七、步骤八）末尾明确标有“暂停，等待用户确认”。特别是步骤七中的“五项扫描每项结果返回用户确认”。Agent **必须**在每个断点停下，输出当前步骤结果，并明确等待用户的审查与指令。
-   - **严禁**：连续越权执行多个步骤（例如一口气跑完问题诊断到终极校对），剥夺用户对文本的反馈和施加判断的能力。
-
+1. **禁止破坏暂停断点**
+   - **红线**：根据工作流说明（`workflows/academic-drafting-stage3.md`）与 `academic-drafter/SKILL.md`，每个子步骤（如步骤六、步骤七、步骤八）末尾明确标有“暂停，调用subagent判断此步骤执行情况是否有疑虑，需要向用户确认”。特别是步骤七中的“五项扫描每项结果返回用户确认”。Agent **必须**在每个断点停下，输出当前步骤结果，然后将相应的上下文（包括：`plan.md`、对应的技能）和执行结果注入subagent，令其判断执行过程是否符合程序。如subagent认为有不符合流程或存在疑虑之处，**必须**向用户提问确认，**严禁**自作主张。
+   - **严禁**：连续执行完一个步骤之后不委托subagent判断执行情况，直接开始执行下一个步骤。
 2. **必须全文读取并注入 Subagent 提示词**
    - **红线**：在执行步骤六、步骤七、步骤八等明确要求调用 Subagent 的环节时，Agent 必须首先使用相关工具（如 `view_file`）读取相应skill的**全部原始内容**，并将其作为完整的系统提示词注入给 Subagent。
    - **严禁**：只向 Subagent 灌输一句简化的角色设定敷衍了事———这会导致诊断无法获得正确的上下文。
