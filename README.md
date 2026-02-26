@@ -1,6 +1,6 @@
 # Academic Drafting - 学术写作辅助环境
 
-基于 [opencode](https://opencode.ai) 框架构建的学术写作辅助环境，服务于批判理论导向的游戏研究（Game Studies）学术写作。项目通过模块化的 Skills 工作流，实现从征稿启事解析到论文定稿的全流程辅助。
+基于 [opencode](https://opencode.ai) 框架构建的学术写作辅助环境，服务于批判理论导向的游戏研究（Game Studies）学术写作。项目通过模块化的 Skills 工作流，实现从征稿启事解析到论文定稿的全流程辅助。原始提示词作者为北京师范大学文艺理论博士、清华大学写作中心教师。
 
 ## 项目简介
 
