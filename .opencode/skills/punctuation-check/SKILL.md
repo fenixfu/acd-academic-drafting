@@ -81,11 +81,11 @@ scripts/check_punctuation.py
 
 ---
 
-## Claude 的执行流程
+## Agent 的执行流程
 
 ### 第一步：配置询问
 
-向用户询问（可用 ask question tool）：
+向用户询问（可用 `ask_user` tool）：
 - 参考文献标题关键词（`参考文献` / `References` / 手动输入）
 - 引号策略（A / B）
 
@@ -106,7 +106,7 @@ python scripts/check_punctuation.py 输入文件.txt \
 
 若无警告，跳过此步，直接进入第四步。
 
-若有警告，逐条按以下流程处理。**优先对每条警告单独调用 ask question tool 提问**；若 ask question tool 不可用，则集中列出所有警告及建议，请用户以编号一次性回复所有选择，再统一执行。
+若有警告，逐条按以下流程处理。**优先对每条警告单独调用** `ask_user` **tool 提问**；若 `ask_user` tool 不可用，则集中列出所有警告及建议，请用户以编号一次性回复所有选择，再统一执行。
 
 ---
 
