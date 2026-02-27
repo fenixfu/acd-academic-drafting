@@ -129,7 +129,7 @@ AI痕迹扫描与内容打磨（委托subagent） → 07_扫描报告.md, 07_修
 - **尊重用户隐私**：不要将用户的论文内容、讨论记录上传或分享
 - **输出目录**：所有生成文件写入`./output/`而非项目根目录
 - **询问备份**：计划阶段，如果`./output/`目录已有文件，询问用户是否执行`./backup_output.sh`备份到`./former_results/`
-- **调用subagent**：在skill中明确提出要求调用/委托subagent的步骤务必调用subagent。再次重申，务必根据要求调用subagent！Subagent优先选择用户自定义的subagent，例如专门执行技能的"skill agent"；其次选择通用subagent。如果两者皆无，请尝试调用"explore"、"codebase investigator"、"browser agent"等拥有正常读取能力的subagent。
+- **调用subagent**：在skill中明确提出要求调用/委托subagent的步骤务必调用subagent。再次重申，务必根据要求调用subagent！Subagent优先选择用户自定义的subagent，例如专门执行技能的"skill-master"；其次选择通用subagent。如果两者皆无，请尝试调用"explore"、"codebase investigator"、"browser agent"等拥有正常读取能力的subagent。
 
 ## 5. 项目流程执行红线
 
