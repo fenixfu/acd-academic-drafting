@@ -36,6 +36,10 @@ content: 1. 项目概述；2. Skills；3. 学术写作工作流；4. 辅助脚�
 3. `academic-drafter` - 执行正文写作与校对
 4. `rewrite-summarize` - 文本总结与重写（可选）
 
+另外，还有两个此流程中主agent无需调用的辅助技能：
+5. `context-retriever` - 上下文检索，仅供subagent使用
+6. `punctuation-checker` - 标点检查，用于最终稿的后处理
+
 **skill调用方法**
 - **首次**调用时完整激活skill
 - **之后**执行skill中特定操作或步骤时，**务必**委托subagent，告知当前正在进行的任务和所需的项目名称，向其请求调取相关内容，**严禁**自己重新阅读skill全文。
