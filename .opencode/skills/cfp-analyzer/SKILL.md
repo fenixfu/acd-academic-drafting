@@ -5,9 +5,9 @@ description: |
   1. 技术解析征稿启事（CFP/Call for Papers），提炼形式要求与隐含偏好
   2. 将非结构化的讨论记录整理为可直接用于写作的结构化素材库
   3. 设计符合学术规范的文章结构（标题 + 各级节名）
-  
   适用场景：准备投稿学术期刊、会议论文集；将头脑风暴或会议讨论记录转化为论文提纲。
   建议配合 academic-writer-persona skill 使用，再交由 academic-drafter skill 执行写作。
+content: 文件输入协议, 征稿启事技术解析, 讨论成果结构化整理, 文章结构设计, 收尾
 ---
 
 # 征稿解析与结构设计（CFP Analyzer）
