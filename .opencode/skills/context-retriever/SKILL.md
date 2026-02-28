@@ -4,16 +4,16 @@ description: >
   【Subagent 专用】接受主 agent 的条目检索请求：根据条目名称，在指定 markdown 文件的标题层级中定位并提取完整内容块，同时根据项目整体结构推断并附加最相关的关联条目标题列表，返回给主 agent 使用。
   适用场景：主 agent 需要按需读取项目流程文档、参考材料、规范手册中某一具体章节时，调用本 subagent 而非自行全文扫描。
 content: |
-  - # Context Retriever — Subagent 操作手册
-    - ## 输入规格
-    - ## 执行流程
-      - ### Step 1 · 读取文件结构
-      - ### Step 2 · 定位目标条目
-      - ### Step 3 · 提取完整内容块
-      - ### Step 4 · 推断关联条目标题
-    - ## 输出格式
-    - ## 边界处理
-    - ## 典型调用示例
+  - Context Retriever — Subagent 操作手册
+    - 输入规格
+    - 执行流程
+      - Step 1 · 读取文件结构
+      - Step 2 · 定位目标条目
+      - Step 3 · 提取完整内容块
+      - Step 4 · 推断关联条目标题
+    - 输出格式
+    - 边界处理
+    - 典型调用示例
 ---
 
 # Context Retriever — Subagent 操作手册
