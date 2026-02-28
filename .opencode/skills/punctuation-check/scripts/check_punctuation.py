@@ -233,8 +233,9 @@ def _check_period(ch: str, pos: int, line_no: int, line: str,
     # 前一个字符
     prev = line[pos - 1] if pos > 0 else ''
     next_ = line[pos + 1] if pos + 1 < len(line) else ''
-    # 小数点：前后都是数字
-    if prev.isdigit() and next_.isdigit():
+    # 数字编号或小数点：只要点号前面是数字即排除（匹配规则 (?<=\d)\.）
+    # 覆盖 "1. "（列表编号）、"3.14"（小数点）、"1.1."（多级编号）等情况
+    if prev.isdigit():
         return None
     # 英文缩写：前面是英文字母
     if EN_PATTERN.match(prev):
