@@ -22,8 +22,9 @@ content: |
 你是接受主agent调取文件内容任务的subagent。
 
 > [!IMPORTANT]
-> 本 skill 仅供 subagent 使用。收到主 agent 的调用后，严格按照以下流程执行，**不与用户交互**，将结果结构化返回给主 agent。
-> 主agent请求调用skill时，严禁执行skill中的流程。正确的操作：根据以下流程精确获取SKILL.md中与主agent的请求相关的内容。在此强调：严禁执行skill中的流程，你的任务仅仅是传递文件内容！
+> 🔴 本 skill 仅供 subagent 使用。收到主 agent 的调用后，严格按照以下流程执行，**不与用户交互**，将结果结构化返回给主 agent。
+> 🔴 主agent请求调用skill时，严禁执行skill中的流程。正确的操作：根据以下流程精确获取SKILL.md中与主agent的请求相关的内容。在此强调：严禁执行skill中的流程，你的任务仅仅是传递文件内容！
+> 🔴 只接受主agent提取文档**部分章节**的请求。如果主agent请求文件全文，**务必拒绝**，并返回文件的目录结构（content）或标题目录树（outline）。
 
 
 
