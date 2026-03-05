@@ -51,7 +51,6 @@ academic-drafter → 语言风格校准 → 分节写作
 
 - [opencode](https://opencode.ai) CLI
 - Python 3.13+
-- Ruff（可选，用于代码检查）
 
 ### 使用步骤
 
@@ -78,10 +77,11 @@ academic-drafter → 语言风格校准 → 分节写作
    ```bash
    opencode
    ```
-   在对话中请求学术论文写作，AI 将自动按顺序加载所需 skills。
+   启动提示词：请仔细阅读references/plan_example.md，将项目流程写入todos，然后开始执行
+   plan_example.md是“已附魔的执行计划”，制作方法：首先要求agent深入理解项目逻辑和流程、关键步骤和执行红线，在此基础上输出比大的步骤详细一个层级的执行计划。然后再要求agent将AGENTS.md中的“执行红线”补充标注到执行计划的所有相应步骤之后。此过程在正式启动之前完成，不占用主会话的上下文。
 
 4. **按阶段确认**
-   每个步骤完成后，AI 会暂停等待确认，确保输出符合预期。
+   每个步骤完成后，AI 会进入自动断点检查，委托subagent检查本步骤执行情况，确保输出符合预期。对工作流或提示词设置不确定时可额外要求“暂停，待用户确认”，工作流和提示词打磨完成后可取消人工断点。
 
 5. **获取产出**
    所有生成文件写入 `./output/` 目录。
@@ -107,6 +107,7 @@ academic-drafter → 语言风格校准 → 分节写作
 ├── references/                     # 参考资料
 │   ├── cfp_example.md              # 示例：征稿启事
 │   └── notes_example.md            # 示例：讨论记录
+│   └── plan_example.md            # 示例：执行计划
 ├── output/                         # 产出目录（论文、摘要等）
 ├── former_results/                 # 备份存储目录
 ├── .gitignore                      # Git 忽略配置
