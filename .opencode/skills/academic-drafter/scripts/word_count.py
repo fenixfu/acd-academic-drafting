@@ -16,10 +16,12 @@
     连续编号列表（"[1]" / "1."）开头的区段
   - 分别统计后给出合计总和
 
-用法：
+用法示例：
   python word_count.py [文件路径 ...]          # 统计一个或多个文件
   python word_count.py --text "文本内容"        # 直接统计文本串（不分区，整体计数）
   python word_count.py --limit 1500 论文.md     # 指定字数上限（默认 800）
+  python word_count.py 摘要.md 正文.md               # 同时统计多个文件
+  python word_count.py --limit 500 --text "$(cat 摘要.md)"  # 管道传入文本
 """
 
 import argparse
